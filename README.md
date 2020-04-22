@@ -29,4 +29,4 @@ To build the image and run the report using docker within the project directory 
 
 and run the report using docker within the project directory like this:
 
-`docker run --rm --env-file my.env <image_name> R -e <script_name.R>`
+`docker run --rm --env-file my.env <image_name> Rscript <script_name.R>`
