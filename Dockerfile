@@ -8,4 +8,8 @@ RUN apt update -y && apt install -y \
 #install necessary libraries
 RUN R -e "install.packages(c('sendmailR', 'dotenv', 'REDCapR', 'RCurl', 'checkmate', 'lubridate', 'kableExtra'))"
 
-CMD R -e "source('render_report.R')"
+ADD *.R /report/
+ADD *.Rmd /report/
+
+# Note where we are and what is there
+CMD pwd && ls -AlhF ./
