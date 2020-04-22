@@ -30,7 +30,7 @@ Since we do not specifically track ‘No-Show’ appointments for this study we 
 ```{r}
 # read appointment data betewwen 2020-04-08 and current_date 
 records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
-                               token = Sys.getenv("FR_API_TOKEN"),
+                               token = Sys.getenv("TOKEN"),
                                raw_or_label = "label")$data %>% 
   mutate(test_date_and_time = as_date(test_date_and_time),
          days_since_appt = current_date - test_date_and_time) %>% 
@@ -80,4 +80,3 @@ ggplot(appt_over_time, aes(x = test_date_and_time, y = n,
        colour = "Outcome")+
   theme(plot.title = element_text(hjust = 0.5))
 ```
-
