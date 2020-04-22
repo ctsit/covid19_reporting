@@ -21,7 +21,7 @@ To build the Docker container, you will need only Docker. Additionally, this pro
 This script is configured entirely via the environment. An example `.env` file is provided as [`example.env`](example.env). To use this file, copy it to the name `.env` and customize according to your project needs. Follow these steps to build the required components and configure the script's `.env` file.
 
 ## Running the RMarkdown script
-The primary script used to run the RMarkdown reports is [`render_report.R`](render_reprot.R)
+The primary script used to run the RMarkdown reports is [`render_report.R`](render_report.R)
 
 To build the image and run the report using docker within the project directory do:
 
