@@ -16,7 +16,8 @@ email_subject <- (Sys.getenv("EMAIL_SUBJECT"))
 
 # attach the zip file and email it
 attachment_object <- mime_part(file_name, file_name)
-body <- paste0("The attached file includes...")
+body <- paste0("The attached file includes the Appointment Outcomes for",
+               " the First Responder Covid-19 Project.", " File generated on ", Sys.time())
 
 body_with_attachment <- list(body, attachment_object)
 
