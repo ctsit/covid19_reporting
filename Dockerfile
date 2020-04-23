@@ -12,6 +12,7 @@ RUN tlmgr install \
     ifxetex \
     makecell \
     multirow \
+    tabu \
     threeparttable \
     threeparttablex \
     trimspaces \
