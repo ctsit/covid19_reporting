@@ -5,6 +5,21 @@ WORKDIR /report
 RUN apt update -y && apt install -y \
  libcurl4-openssl-dev
 
+RUN tlmgr install \
+    colortbl \
+    environ \
+    ifluatex \
+    ifxetex \
+    makecell \
+    multirow \
+    threeparttable \
+    threeparttablex \
+    trimspaces \
+    ulem \
+    varwidth \
+    wrapfig \
+    xcolor
+
 #install necessary libraries
 RUN R -e "install.packages(c('sendmailR', 'dotenv', 'REDCapR', 'RCurl', 'checkmate', 'lubridate', 'kableExtra'))"
 
