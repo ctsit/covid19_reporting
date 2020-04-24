@@ -57,7 +57,9 @@ appt_by_agency <- records %>%
   ungroup() %>% 
   pivot_wider(names_from = covid_19_swab_result, values_from = n) %>% 
   mutate_all(replace_na, 0) %>% 
-  select(Agency, Negative, `No Show`, `Waiting for Results`, Positive, Total)
+  select(Agency, Negative, `No Show`, `Waiting for Results`, Positive, Total) %>% 
+  add_row(Agency = "Overall Total", Total = sum(.$Total)) %>% 
+  mutate_all(replace_na, '')
 
 kable(appt_by_agency, "latex", booktabs = T,
       caption = paste("Covid-19 Appointment Outcome by Agency for",  
