@@ -15,8 +15,8 @@ get_records <- function(){
   
   records <- records %>%
     select(-fields_from_baseline) %>%    
-    left_join(baseline_records, by = c("record_id")) 
-  
+    left_join(baseline_records, by = c("record_id")) %>%
+    select(record_id, redcap_event_name, one_of(colnames(baseline_records)), everything())
   
   return(records)
 }
