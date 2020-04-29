@@ -28,6 +28,9 @@ data_dictionary <- read.csv(paste0("data/", data_dictionary)) %>%
 
 records <- get_records()
 
+write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"), 
+          row.names = F, na = "")
+
 total_tests <- n_distinct(records$record_id, records$redcap_event_name)
 
 checkbox_fields <- records %>% get_checkboxes()  
