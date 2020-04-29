@@ -1,6 +1,7 @@
 get_records <- function(){
   records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
-                                 token = Sys.getenv("TOKEN"))$data %>% 
+                                 token = Sys.getenv("TOKEN"),
+                                 guess_max = 3000)$data %>%
     filter(!is.na(covid_19_swab_result))
   
   fields_from_baseline <- c("ce_firstname", "ce_lastname", "patient_dob", 
