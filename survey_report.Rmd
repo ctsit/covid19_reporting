@@ -1,5 +1,5 @@
 ---
-title: "Survey Report"
+title: "FR Covid-19 Survey Report"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
@@ -21,9 +21,12 @@ source("functions.R")
 ```
 
 ```{r}
-records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
-                               token = Sys.getenv("TOKEN"))$data %>% 
-  filter(!is.na(covid_19_swab_result))
+# download data dictionary and place it in data folder
+data_dictionary <- list.files("data", "FirstResponderCOVID19TestingPr")
+data_dictionary <- read.csv(paste0("data/", data_dictionary)) %>% 
+  clean_names()
+
+records <- get_records()
 
 total_tests <- n_distinct(records$record_id, records$redcap_event_name)
 
@@ -42,7 +45,7 @@ all_fields <- checkbox_fields %>%
   
 ```
 
-This report gives the summary statistics for the First Responder Covid 19 questionnaires. Both Tables 1 and 2 excludes NAs. The total number of swab results completed is `r total_tests`
+This report provides the summary statistics for the First Responder Covid 19 questionnaires. Both Tables 1 and 2 excludes NAs. The total number of swab results completed is `r total_tests`
 ```{r}
 kable(all_fields %>% select(-field_label), booktabs = T, longtable = T,
       caption = "Categorical Variables") %>% 
