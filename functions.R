@@ -1,6 +1,7 @@
 get_records <- function(){
   records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
-                                 token = Sys.getenv("TOKEN"))$data %>% 
+                                 token = Sys.getenv("TOKEN"),
+                                 guess_max = 3000)$data %>%
     filter(!is.na(covid_19_swab_result))
   
   fields_from_baseline <- c("ce_firstname", "ce_lastname", "patient_dob", 
@@ -14,8 +15,8 @@ get_records <- function(){
   
   records <- records %>%
     select(-fields_from_baseline) %>%    
-    left_join(baseline_records, by = c("record_id")) 
-  
+    left_join(baseline_records, by = c("record_id")) %>%
+    select(record_id, redcap_event_name, one_of(colnames(baseline_records)), everything())
   
   return(records)
 }
@@ -56,7 +57,8 @@ get_checkboxes <- function(df){
 # ----- Radio cols ----#
 get_radio_cols <- function(df){
   radio <- data_dictionary %>%
-  filter(field_type == "radio" & form_name == 'coronavirus_covid19_questionnaire') %>%  
+  filter(field_type == "radio" & (form_name == 'coronavirus_covid19_questionnaire' |
+                                    field_name %in% c('covid_19_swab_result', 'site_short_name', 'test_type'))) %>%
     select(field_name, select_choices_or_calculations, field_label) %>%
     separate_rows(select_choices_or_calculations, sep = "\\|") %>%
     separate(select_choices_or_calculations, into = c("numeric_value", "label"),

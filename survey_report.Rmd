@@ -46,7 +46,7 @@ all_fields <- checkbox_fields %>%
   
 ```
 
-This report provides the summary statistics for the First Responder Covid 19 questionnaires. Both Tables 1 and 2 excludes NAs. The total number of swab results completed is `r total_tests`
+This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result. Both Tables 1 and 2 excludes NAs. The total number of swab results completed is `r total_tests`.
 ```{r}
 kable(all_fields %>% select(-field_label), booktabs = T, longtable = T,
       caption = "Categorical Variables") %>% 
