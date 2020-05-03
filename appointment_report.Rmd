@@ -56,7 +56,7 @@ records <- records %>%
 result_total <- records %>%
   count(covid_19_swab_result) %>% 
   pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
-  mutate(Total = rowSums(.[,])) %>% 
+  mutate(Total = rowSums(.[])) %>% 
   mutate_all(as.character) 
 
 appt_by_agency <- records %>% 
