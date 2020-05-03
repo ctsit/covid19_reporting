@@ -17,26 +17,28 @@ library(REDCapR)
 library(lubridate)
 library(kableExtra)
 
+source("functions.R")
+
 # set the timezone
-Sys.setenv(TZ = Sys.getenv("TIME_ZONE"))
+script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
 
 project_start_date <- ymd("2020-04-08")
-current_date <- Sys.Date() - 1
+current_date <- as_date(script_run_time) - 1
 ```
 
 Since we do not specifically track ‘No-Show’ appointments for this study we are operating under the assumption that if the appointment occurred and 48 hours elapsed without a test result being entered then the subject did not show up for their appointment and thus had no sample collected.
-
+For subjects with multiple tests priority is given to positive swab results
 
 ```{r}
 # read appointment data betewwen 2020-04-08 and current_date 
-records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
-                               token = Sys.getenv("TOKEN"),
-                               raw_or_label = "label")$data %>% 
+records <- get_records(raw_or_label = "label") %>% 
   mutate(test_date_and_time = as_date(test_date_and_time),
          days_since_appt = current_date - test_date_and_time) %>% 
   filter(between(test_date_and_time, project_start_date, current_date))  
   
 records <- records %>%
+  # priority is given to positive results when there are multiple tests per subject
+  arrange(record_id, desc(covid_19_swab_result)) %>% 
   mutate(
     q_agency = str_to_title(
       case_when(is.na(q_agency) ~ "Unknown Agency",
@@ -44,7 +46,9 @@ records <- records %>%
     covid_19_swab_result = case_when(
       days_since_appt > 2 & is.na(covid_19_swab_result) ~ "No Show",
       days_since_appt <= 2 & is.na(covid_19_swab_result) ~ "Waiting for Results",
-      TRUE ~ covid_19_swab_result)) %>%
+      TRUE ~ covid_19_swab_result)) %>% 
+  # select a unique subject
+  distinct(record_id, .keep_all = T) %>% 
   select("Agency" = q_agency, covid_19_swab_result, test_date_and_time)
 
 appt_by_agency <- records %>% 
@@ -64,7 +68,7 @@ appt_by_agency <- records %>%
 kable(appt_by_agency, "latex", booktabs = T,
       caption = paste("Covid-19 Appointment Outcome by Agency for",  
                        project_start_date, "to", current_date)) %>% 
-  kable_styling(latex_options = c("striped", "hold_position"))
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down"))
 ```
 
 ```{r fig.align="center", fig.width=12, fig.height=6}
