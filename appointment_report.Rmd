@@ -11,6 +11,8 @@ knitr::opts_chunk$set(
 	warning = FALSE
 )
 
+options(knitr.kable.NA = '')
+
 library(tidyverse)
 library(dotenv)
 library(REDCapR)
@@ -55,8 +57,7 @@ result_total <- records %>%
   count(covid_19_swab_result) %>% 
   pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
   mutate(Total = rowSums(.[,])) %>% 
-  mutate_all(as.character) %>% 
-  add_column("Agency" = 'Overall Total')
+  mutate_all(as.character) 
 
 appt_by_agency <- records %>% 
   count(Agency, covid_19_swab_result) %>%  
@@ -69,13 +70,14 @@ appt_by_agency <- records %>%
   pivot_wider(names_from = covid_19_swab_result, values_from = n) %>% 
   select(Agency, Negative, `No Show`, `Waiting for Results`, Positive, Total) %>%
   mutate_all(as.character) %>% 
-  bind_rows(result_total) %>% 
-  mutate_all(replace_na, 0)
+  mutate_all(replace_na, 0) %>% 
+  bind_rows(result_total) 
 
 kable(appt_by_agency, "latex", booktabs = T,
       caption = paste("Covid-19 Appointment Outcome by Agency for",  
                        project_start_date, "to", current_date)) %>% 
-  kable_styling(latex_options = c("striped", "hold_position", "scale_down"))
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
+  row_spec(nrow(appt_by_agency) - 1, hline_after = T)
 ```
 
 ```{r fig.align="center", fig.width=12, fig.height=6}
