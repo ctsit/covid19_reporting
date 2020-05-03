@@ -51,6 +51,13 @@ records <- records %>%
   distinct(record_id, .keep_all = T) %>% 
   select("Agency" = q_agency, covid_19_swab_result, test_date_and_time)
 
+result_total <- records %>%
+  count(covid_19_swab_result) %>% 
+  pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
+  mutate(Total = rowSums(.[,])) %>% 
+  mutate_all(as.character) %>% 
+  add_column("Agency" = 'Overall Total')
+
 appt_by_agency <- records %>% 
   count(Agency, covid_19_swab_result) %>%  
   group_by(Agency) %>% 
@@ -60,10 +67,10 @@ appt_by_agency <- records %>%
   select(-perc) %>% 
   ungroup() %>% 
   pivot_wider(names_from = covid_19_swab_result, values_from = n) %>% 
-  mutate_all(replace_na, 0) %>% 
-  select(Agency, Negative, `No Show`, `Waiting for Results`, Positive, Total) %>% 
-  add_row(Agency = "Overall Total", Total = sum(.$Total)) %>% 
-  mutate_all(replace_na, '')
+  select(Agency, Negative, `No Show`, `Waiting for Results`, Positive, Total) %>%
+  mutate_all(as.character) %>% 
+  bind_rows(result_total) %>% 
+  mutate_all(replace_na, 0)
 
 kable(appt_by_agency, "latex", booktabs = T,
       caption = paste("Covid-19 Appointment Outcome by Agency for",  
