@@ -42,9 +42,6 @@ records <- records %>%
   # priority is given to positive results when there are multiple tests per subject
   arrange(record_id, desc(covid_19_swab_result)) %>% 
   mutate(
-    q_agency = str_to_title(
-      case_when(is.na(q_agency) ~ "Unknown Agency",
-                TRUE ~ q_agency)),
     covid_19_swab_result = case_when(
       days_since_appt > 2 & is.na(covid_19_swab_result) ~ "No Show",
       days_since_appt <= 2 & is.na(covid_19_swab_result) ~ "Waiting for Results",
