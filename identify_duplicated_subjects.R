@@ -16,7 +16,9 @@ filtered_records <- records %>%
   filter(!is.na(covid_19_swab_result) |
          (days_since_appt > 7 & 
           is.na(covid_19_swab_result) &
-          test_date_and_time != '1969-12-31')) %>% 
+          test_date_and_time != '1969-12-31')) %>%
+  filter(redcap_event_name == "baseline_arm_1") %>%
+  filter(!is.na(ce_email)) %>%
   mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>% 
   select(record_id, redcap_event_name, ce_firstname, ce_lastname, patient_dob, 
          ce_email, q_agency, zipcode, covid_19_swab_result, q_agency, test_date_and_time, 
@@ -74,9 +76,10 @@ redcap_import <- duplicated_subjects_by_email %>%
   bind_rows(duplicated_subjects_by_zipcode %>% 
               filter(record_id == max(record_id))) %>% 
   select(-id) %>% 
-  ungroup() %>% 
-  distinct() %>% 
+  ungroup() %>%
+  distinct() %>%
   select(record_id, redcap_event_name, ce_email) %>% 
+  mutate(ce_email_backup = ce_email) %>%
   mutate(ce_email = "")
   
 write.csv(redcap_import, 
