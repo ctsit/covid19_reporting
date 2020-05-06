@@ -38,7 +38,7 @@ records <- get_records(raw_or_label = "label")
 filtered_records <- records %>%
    mutate(test_date_and_time = as_date(test_date_and_time),
          days_since_appt = current_date - test_date_and_time) %>% 
-  filter(between(test_date_and_time, project_start_date, current_date),
+  filter(between(test_date_and_time, project_start_date, current_date) &
          !is.na(ce_email)) %>% 
   arrange(record_id, desc(covid_19_swab_result)) %>% 
   mutate(
