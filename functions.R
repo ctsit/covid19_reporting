@@ -1,22 +1,23 @@
-get_records <- function(){
+get_records <- function(...){
   records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
                                  token = Sys.getenv("TOKEN"),
-                                 guess_max = 3000)$data %>%
-    filter(!is.na(covid_19_swab_result))
+                                 guess_max = 3000, ...)$data 
   
   fields_from_baseline <- c("ce_firstname", "ce_lastname", "patient_dob", 
-                            "ce_orgconsentdate", "first_responder_role",
+                            "ce_orgconsentdate","ce_email","zipcode", "first_responder_role",
                             "q_agency", "q_ufhealth_department",
                             "q_ufhealth_covid_unit_role","q_ufhealth_covid_unit")
   
   baseline_records <- records %>%
-    filter(redcap_event_name == 'baseline_arm_1') %>%
+    # redcap event is BASELINE or baseline_arm_1 depending on if 'raw' or 'label'
+    # values are exported
+    filter(str_detect(tolower(redcap_event_name), "bas")) %>% 
     select(record_id, fields_from_baseline)
   
   records <- records %>%
     select(-fields_from_baseline) %>%    
     left_join(baseline_records, by = c("record_id")) %>%
-    select(record_id, redcap_event_name, one_of(colnames(baseline_records)), everything())
+    select(record_id, redcap_event_name, fields_from_baseline, everything())
   
   return(records)
 }
