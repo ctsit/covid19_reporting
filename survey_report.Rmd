@@ -1,0 +1,76 @@
+---
+title: "FR Covid-19 Survey Report"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+library(tidyverse)
+library(dotenv)
+library(REDCapR)
+library(lubridate)
+library(janitor)
+library(kableExtra)
+library(skimr)
+source("functions.R")
+```
+
+```{r}
+data_dictionary <-  redcap_metadata_read(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
+                     token = Sys.getenv("TOKEN"))$data
+
+records <- get_records() %>% 
+  filter(!is.na(covid_19_swab_result))
+
+write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"), 
+          row.names = F, na = "")
+
+total_tests <- n_distinct(records$record_id, records$redcap_event_name)
+
+checkbox_fields <- records %>% get_checkboxes()  
+radio_fields <- records %>% get_radio_cols()
+yes_no_fields <- records %>% get_yes_no_cols()
+
+all_fields <- checkbox_fields %>% 
+  bind_rows(radio_fields) %>% 
+  bind_rows(yes_no_fields) %>% 
+  mutate(percent = round((n/total_tests*100),1),
+         "N (%)" = paste0(n, " (", percent,")")) %>% 
+  select(field_label, "Variable" = label, "N (%)") %>% 
+  mutate_at(vars("field_label"), ~ str_to_title(str_remove(., "^If yes, "))) %>% 
+  arrange(field_label) 
+  
+```
+
+This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result. Both Tables 1 and 2 excludes NAs. The total number of swab results completed is `r total_tests`.
+```{r}
+kable(all_fields %>% select(-field_label), booktabs = T, longtable = T,
+      caption = "Categorical Variables") %>% 
+  kable_styling(latex_options = "repeat_header") %>% 
+  pack_rows(index = auto_index(all_fields$field_label))
+```
+
+```{r}
+numeric_cols <- records %>% 
+  select("Patient Age" = patient_age, 
+         "Weekly hours spent on front line with direct patient contact" = q_hours_contact_patient,   
+         "Weekly hours spent on the front line with public contact" = q_hours_contact_public) %>% 
+  mutate_if(is.character, parse_number) %>%   
+  skim() %>% 
+  mutate(complete_rate = complete_rate * 100) %>% 
+  select("Variable" = skim_variable, "Complete Rate" = complete_rate,
+         "Mean" = numeric.mean, "Median" = numeric.p50, "SD" = numeric.sd) %>%  
+  mutate_if(is.numeric, round, 1)
+
+```
+
+```{r}
+kable(numeric_cols, booktabs = T, caption = "Numeric Variables") %>% 
+  kable_styling()
+```
+
