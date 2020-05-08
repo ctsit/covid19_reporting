@@ -24,7 +24,8 @@ source("functions.R")
 data_dictionary <-  redcap_metadata_read(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
                      token = Sys.getenv("TOKEN"))$data
 
-records <- get_records()
+records <- get_records() %>% 
+  filter(!is.na(covid_19_swab_result))
 
 write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"), 
           row.names = F, na = "")
