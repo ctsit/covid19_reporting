@@ -1,5 +1,5 @@
 ---
-title: "First Responder Covid-19 Report"
+title: "First Responder COVID-19 Report"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
@@ -28,8 +28,9 @@ project_start_date <- ymd("2020-04-08")
 current_date <- as_date(script_run_time) - 1
 ```
 
-Since we do not specifically track ‘No-Show’ appointments for this study we are operating under the assumption that if the appointment occurred and 48 hours elapsed without a test result being entered then the subject did not show up for their appointment and thus had no sample collected.
-For subjects with multiple tests priority is given to positive swab results
+This is a person-centric report about the study participants in the First Responder COVID-19 Project. This report includes study participants who have received or are still waiting for a result.
+
+Note that "Waiting for Results" is defined as a person with an appointment that still does not have a recorded result 48 hours after their appointment. Note also that if a study participant ever had a positive result, they are shown as positive in this report.
 
 ```{r}
 # read appointment data betewwen 2020-04-08 and current_date 
@@ -73,7 +74,7 @@ appt_by_agency <- filtered_records %>%
   bind_rows(result_total) 
 
 kable(appt_by_agency, "latex", booktabs = T,
-      caption = paste("Covid-19 Appointment Outcome by Agency for",  
+      caption = paste("COVID-19 Appointment Outcome by Agency for",
                        project_start_date, "to", current_date)) %>% 
   kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
   row_spec(nrow(appt_by_agency) - 1, hline_after = T)
