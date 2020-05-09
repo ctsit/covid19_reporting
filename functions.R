@@ -46,11 +46,10 @@ get_checkboxes <- function(df){
     select(checkbox_cols) %>% 
     pivot_longer(checkbox_cols, names_to = "checkbox_name",
                  values_to = "checkbox_value") %>%    
-    left_join(checkboxes) %>% 
+    inner_join(checkboxes) %>% 
     mutate_all(trimws) %>%  
     select(-checkbox_name) %>% 
-    filter(checkbox_value == 1) %>%    
-    count(field_label, label)
+    count(field_label, label, checkbox_value)
     
   return(df_with_checkbox_labels)
 }
@@ -74,8 +73,8 @@ get_radio_cols <- function(df){
     colnames()
   
   df_with_radio_labels <- df %>%
-    select(radio_cols) %>%  
-    mutate_all(as.character) %>%  
+    select(radio_cols) %>% 
+    mutate_all(as.character) %>% 
     pivot_longer(radio_cols, names_to = "field_name",
                  values_to = "numeric_value") %>%  
     inner_join(radio) %>%   
