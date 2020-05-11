@@ -49,7 +49,7 @@ checkbox_fields <- records %>%
          Unchecked = paste0(Unchecked, " (", perc_unchecked,")"),
          perc_checked = round((Checked/total * 100),1),
          Checked = paste0(Checked, " (", perc_checked,")")) %>% 
-  select(field_label, label, Checked, Unchecked)
+  select(field_label, "Variable" = label, Checked, Unchecked)
          
 radio_fields <- records %>%
   get_radio_cols() %>% 
@@ -69,7 +69,7 @@ radio_fields_all <- radio_fields %>%
   # group_by(field_label) %>%
   # mutate(total = sum(Yes))
   mutate("N (%)" = paste0(yes, " (", perc,")")) %>% 
-  select(field_label, label, "N (%)")
+  select(field_label, "Variable" = label, "N (%)")
 
 yes_no_fields <- records %>% 
   get_yes_no_cols() %>% 
@@ -81,7 +81,7 @@ yes_no_fields <- records %>%
   pivot_longer(-field_label, names_to = "label", values_to = "value") %>% 
   mutate(perc = round((value/total_subjects * 100), 1)) %>% 
   mutate("N (%)" = paste0(value, " (", perc,")")) %>% 
-  select(field_label, label, "N (%)")
+  select(field_label, "Variable" = label, "N (%)")
   
 ```
 
