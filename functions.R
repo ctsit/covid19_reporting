@@ -1,5 +1,5 @@
 get_records <- function(...){
-  records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
+  records <- redcap_read_oneshot(redcap_uri = Sys.getenv("URI"),
                                  token = Sys.getenv("TOKEN"),
                                  guess_max = 3000, ...)$data 
   
