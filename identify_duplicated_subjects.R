@@ -61,17 +61,34 @@ duplicated_subjects <- duplicated_subjects_by_zipcode %>%
   
 
 subjects_with_bad_data <- duplicated_subjects %>% 
-  filter(row_id_sum < 2)
+  filter(row_id_sum < 2) 
+  
+# group by email for subjects with bad data. Based on a review of the above df this is the best route
+use_email_for_bad_data <- subjects_with_bad_data %>% 
+  group_by(ce_email) %>% 
+  mutate(row_id = sequence(n())) %>% 
+  select(row_id, everything()) %>% 
+  filter(sum(row_id) > 1) %>% 
+  ungroup() %>% 
+  mutate(ce_email_backup = if_else(row_id > 1, ce_email, NA_character_),
+         ce_email = if_else(row_id == 1, ce_email, NA_character_)) 
+
+subjects_with_bad_data <- subjects_with_bad_data %>% 
+  anti_join(use_email_for_bad_data, by = "record_id") 
 
 write.csv(subjects_with_bad_data, 
-          paste0("output/blank_emails_for_duplicate_subjects_", today(), ".csv"),
+          paste0("output/subjects_with_bad_data", today(), ".csv"),
           row.names = F, na = "")
 
+
+# create dataset for REDCap import ----------------------------------------
+
+
 redcap_import <- duplicated_subjects %>% 
-  filter(row_id_sum > 1) %>% 
+  filter(row_id_sum > 1) %>%
+  bind_rows(use_email_for_bad_data) %>% 
   ungroup() %>% 
   select(record_id, redcap_event_name, ce_email, ce_email_backup)
-  
   
 write.csv(redcap_import, 
           paste0("output/blank_emails_for_duplicate_subjects_", today(), ".csv"),
