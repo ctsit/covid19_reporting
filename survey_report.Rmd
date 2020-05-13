@@ -21,38 +21,87 @@ source("functions.R")
 ```
 
 ```{r}
-data_dictionary <-  redcap_metadata_read(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
+data_dictionary <- redcap_metadata_read(redcap_uri = Sys.getenv("URI"),
                      token = Sys.getenv("TOKEN"))$data
 
-records <- get_records() %>% 
-  filter(!is.na(covid_19_swab_result))
+records <- get_records() 
 
-write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"), 
+write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"),
           row.names = F, na = "")
+  
+records <- records %>% 
+  filter(!is.na(covid_19_swab_result) & 
+           redcap_event_name == 'baseline_arm_1' & 
+           !is.na(ce_email))
 
-total_tests <- n_distinct(records$record_id, records$redcap_event_name)
 
-checkbox_fields <- records %>% get_checkboxes()  
-radio_fields <- records %>% get_radio_cols()
-yes_no_fields <- records %>% get_yes_no_cols()
 
-all_fields <- checkbox_fields %>% 
-  bind_rows(radio_fields) %>% 
-  bind_rows(yes_no_fields) %>% 
-  mutate(percent = round((n/total_tests*100),1),
-         "N (%)" = paste0(n, " (", percent,")")) %>% 
-  select(field_label, "Variable" = label, "N (%)") %>% 
-  mutate_at(vars("field_label"), ~ str_to_title(str_remove(., "^If yes, "))) %>% 
-  arrange(field_label) 
+total_subjects <- nrow(records)
+
+checkbox_fields <- records %>% 
+  get_checkboxes() %>%  
+  mutate(checkbox_value = if_else(checkbox_value == 0, "Unchecked", "Checked")) %>% 
+  pivot_wider(names_from = checkbox_value, values_from = n) %>% 
+  mutate_at(vars(c("Unchecked", "Checked")), ~ replace(., is.na(.), 0)) %>%  
+  rowwise() %>%
+  mutate(total = sum(Checked, Unchecked, na.rm = T),
+         perc_unchecked = round((Unchecked/total * 100),1),
+         Unchecked = paste0(Unchecked, " (", perc_unchecked,")"),
+         perc_checked = round((Checked/total * 100),1),
+         Checked = paste0(Checked, " (", perc_checked,")")) %>% 
+  select(field_label, "Variable" = label, Checked, Unchecked)
+         
+radio_fields <- records %>%
+  get_radio_cols() %>% 
+  rename("yes" = n) 
+  
+radio_field_unanswered <- radio_fields %>%
+    group_by(field_label) %>%  
+    mutate("yes" = total_subjects - sum(yes)) %>%      
+    distinct(field_label, yes, .keep_all = T) %>% 
+    mutate(label = "NAs")
+
+radio_fields_all <- radio_fields %>% 
+  bind_rows(radio_field_unanswered) %>% 
+  arrange(field_label) %>% 
+  mutate(perc = round((yes/total_subjects * 100), 1)) %>%  
+  # total should be nrow(records) for every field_label
+  # group_by(field_label) %>%
+  # mutate(total = sum(Yes))
+  mutate("N (%)" = paste0(yes, " (", perc,")")) %>% 
+  select(field_label, "Variable" = label, "N (%)")
+
+yes_no_fields <- records %>% 
+  get_yes_no_cols() %>% 
+  pivot_wider(names_from = label, values_from = n) %>%  
+  mutate_at(vars(c("No", "Yes")), ~ replace(., is.na(.), 0)) %>%  
+  mutate("NAs" = total_subjects - (No + Yes)) %>%  
+  # total shoud be nrow(records)
+  # mutate(total = No + Yes + NAs )
+  pivot_longer(-field_label, names_to = "label", values_to = "value") %>% 
+  mutate(perc = round((value/total_subjects * 100), 1)) %>% 
+  mutate("N (%)" = paste0(value, " (", perc,")")) %>% 
+  select(field_label, "Variable" = label, "N (%)")
   
 ```
 
-This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result. Both Tables 1 and 2 excludes NAs. The total number of swab results completed is `r total_tests`.
+This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result at baseline. Table 1 provides the statistics for checkbox fields, Table 2 provides the statistics for radio and yes/no fields and Table 3 provides the statistics for numeric variables. The total number of unique subjects is `r total_subjects`.
+
 ```{r}
-kable(all_fields %>% select(-field_label), booktabs = T, longtable = T,
-      caption = "Categorical Variables") %>% 
+kable(checkbox_fields %>% select(-field_label), booktabs = T, longtable = T,
+      caption = "Checkbox Fields") %>% 
   kable_styling(latex_options = "repeat_header") %>% 
-  pack_rows(index = auto_index(all_fields$field_label))
+  pack_rows(index = auto_index(checkbox_fields$field_label))
+```
+
+```{r}
+radio_and_yes_no <- radio_fields_all %>% 
+  bind_rows(yes_no_fields)
+
+kable(radio_and_yes_no %>% select(-field_label), booktabs = T, longtable = T,
+      caption = "Radio and Yes/No Fields") %>% 
+  kable_styling(latex_options = "repeat_header") %>% 
+  pack_rows(index = auto_index(radio_and_yes_no$field_label))
 ```
 
 ```{r}
