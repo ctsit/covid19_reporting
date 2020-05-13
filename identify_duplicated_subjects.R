@@ -18,6 +18,8 @@ filtered_records <- records %>%
           is.na(covid_19_swab_result) &
           test_date_and_time != '1969-12-31')) %>%
   filter(redcap_event_name == "baseline_arm_1") %>%
+  # TODO: remove this for future runs
+  mutate(ce_email = tolower(coalesce(ce_email, ce_email_backup))) %>% 
   filter(!is.na(ce_email)) %>%
   mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>% 
   select(record_id, redcap_event_name, ce_firstname, ce_lastname, patient_dob, 
@@ -42,45 +44,34 @@ duplicated_subjects_by_zipcode <- filtered_records %>%
   mutate(id = paste(ce_firstname, ce_lastname, patient_dob, zipcode)) %>%    
   group_by(id) %>% 
   filter(n_distinct(record_id) > 1) %>%
-  arrange(id, record_id)
+  arrange(id, record_id) %>% 
+  ungroup() %>% 
+  select(-id) 
 
 duplicated_subjects <- duplicated_subjects_by_zipcode %>% 
-  ungroup() %>% 
-  select(-id) %>% 
-  bind_rows(duplicated_subjects_by_email) %>%  
-  ungroup() %>%   
-  distinct(record_id, redcap_event_name, ce_firstname, ce_lastname, .keep_all = T) 
+  bind_rows(duplicated_subjects_by_email) %>% 
+  distinct() %>% 
+  group_by(ce_firstname, ce_lastname, patient_dob) %>% 
+  mutate(row_id = sequence(n())) %>% 
+  select(row_id, everything()) %>% 
+  mutate(ce_email_backup = if_else(row_id > 1, ce_email, NA_character_),
+         ce_email = if_else(row_id == 1, ce_email, NA_character_)) %>%
+  # sum the row_id to find subjects that have name/dob issues
+  mutate(row_id_sum = sum(row_id))
+  
 
-write.csv(duplicated_subjects, 
-          paste0("output/duplicate_subjects_", today(), ".csv"),
+subjects_with_bad_data <- duplicated_subjects %>% 
+  filter(row_id_sum < 2)
+
+write.csv(subjects_with_bad_data, 
+          paste0("output/blank_emails_for_duplicate_subjects_", today(), ".csv"),
           row.names = F, na = "")
 
-# compare to cindy's data -------------------------------------------------
-
-
-cindys_repeats <- readxl::read_excel("data/FirstResponder_Repeats.xlsx")
-
-only_in_cindys <- cindys_repeats %>% 
-  anti_join(duplicated_subjects, by = c("Record ID" = "record_id"))
-
-# compare those only in cindys to what's in records.
-locate_only_in_cindys_ids <- records %>% 
-  filter(record_id %in% only_in_cindys$`Record ID`) %>% 
-  select(record_id, ce_firstname, ce_lastname, test_date_and_time, covid_19_swab_result)
-
-
-# redcap import dataset ---------------------------------------------------
-
-redcap_import <- duplicated_subjects_by_email %>% 
-  filter(record_id == max(record_id)) %>% 
-  bind_rows(duplicated_subjects_by_zipcode %>% 
-              filter(record_id == max(record_id))) %>% 
-  select(-id) %>% 
-  ungroup() %>%
-  distinct() %>%
-  select(record_id, redcap_event_name, ce_email) %>% 
-  mutate(ce_email_backup = ce_email) %>%
-  mutate(ce_email = "")
+redcap_import <- duplicated_subjects %>% 
+  filter(row_id_sum > 1) %>% 
+  ungroup() %>% 
+  select(record_id, redcap_event_name, ce_email, ce_email_backup)
+  
   
 write.csv(redcap_import, 
           paste0("output/blank_emails_for_duplicate_subjects_", today(), ".csv"),
