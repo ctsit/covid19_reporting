@@ -40,7 +40,6 @@ filtered_records <- records %>%
   arrange(desc(covid_19_swab_result)) %>% 
   # priority is given to positive results when there are multiple tests per subject
   distinct(ce_firstname, ce_lastname, ce_email, .keep_all = T) %>% 
-  distinct(record_id, .keep_all = T) %>% 
   select("Agency" = q_agency, covid_19_swab_result, test_date_and_time)
 
 result_total <- filtered_records %>%
