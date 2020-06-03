@@ -6,7 +6,7 @@ source("functions.R")
 
 
 records <- get_records()  
-  
+
 filtered_records <- records %>% 
   mutate(test_date_and_time = as_date(test_date_and_time),
          days_since_appt = today() - test_date_and_time) %>%
@@ -94,4 +94,3 @@ if (nrow(set_send_survey_invites) == nrow(filtered_records)) {
             paste("output/survey_field_set_", today(), ".csv"), na = "")
   
 }
-
