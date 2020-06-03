@@ -14,7 +14,7 @@ records <- get_records()
 restore_ce_email <- records %>% 
   filter(!is.na(ce_email_backup)) %>% 
   mutate(ce_email = coalesce(ce_email, ce_email_backup)) %>% 
-  select(record_id, redcap_event_name, ce_email) %>% 
+  select(record_id, redcap_event_name, ce_email)
 
 write_csv(restore_ce_email, "output/restore_ce_email.csv")
 
@@ -107,4 +107,3 @@ if (nrow(set_send_survey_invites) == nrow(filtered_records)) {
                                          today(), ".csv"))
   
 }
-
