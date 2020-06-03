@@ -22,32 +22,24 @@ library(kableExtra)
 source("functions.R")
 
 # set the timezone
-script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
-
 project_start_date <- ymd("2020-04-08")
-current_date <- as_date(script_run_time) - 1
+script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
 ```
 
-This is a person-centric report about the study participants in the First Responder COVID-19 Project. This report includes study participants who have received or are still waiting for a result.
-
-Note that "Waiting for Results" is defined as a person with an appointment that still does not have a recorded result 48 hours after their appointment. Note also that if a study participant ever had a positive result, they are shown as positive in this report.
+This is a person-centric report about the study participants in the First Responder COVID-19 Project. This report only includes study participants who have received a swab result.
 
 ```{r}
 # read appointment data betewwen 2020-04-08 and current_date 
 records <- get_records(raw_or_label = "label") 
   
 filtered_records <- records %>%
-   mutate(test_date_and_time = as_date(test_date_and_time),
-         days_since_appt = current_date - test_date_and_time) %>% 
-  filter(between(test_date_and_time, project_start_date, current_date) &
-         !is.na(ce_email)) %>% 
-  arrange(record_id, desc(covid_19_swab_result)) %>% 
-  mutate(
-    covid_19_swab_result = case_when(
-      days_since_appt > 2 & is.na(covid_19_swab_result) ~ "No Show",
-      days_since_appt <= 2 & is.na(covid_19_swab_result) ~ "Waiting for Results",
-      TRUE ~ covid_19_swab_result)) %>% 
+  select(record_id, redcap_event_name, ce_firstname, ce_lastname, ce_email, 
+         send_survey_invites, test_date_and_time, covid_19_swab_result, q_agency) %>% 
+  filter(send_survey_invites == 'Yes' | covid_19_swab_result == 'Positive') %>%  
+  mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>% 
+  arrange(desc(covid_19_swab_result)) %>% 
   # priority is given to positive results when there are multiple tests per subject
+  distinct(ce_firstname, ce_lastname, ce_email, .keep_all = T) %>% 
   distinct(record_id, .keep_all = T) %>% 
   select("Agency" = q_agency, covid_19_swab_result, test_date_and_time)
 
@@ -56,8 +48,8 @@ result_total <- filtered_records %>%
   mutate(perc = round(n/sum(n),3)*100,
          n = paste0(n, " (", perc,"%)")) %>% 
   select(-perc) %>% 
-  pivot_wider(names_from = covid_19_swab_result, values_from = n) %>% 
-  add_column("Total" = as.character(nrow(filtered_records)))
+  pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
+  add_column("Agency" = "Total",  "Total" = as.character(nrow(filtered_records)))
   
 appt_by_agency <- filtered_records %>% 
   count(Agency, covid_19_swab_result) %>%  
@@ -67,32 +59,33 @@ appt_by_agency <- filtered_records %>%
          n = paste0(n, " (", perc,"%)")) %>% 
   select(-perc) %>% 
   ungroup() %>% 
-  pivot_wider(names_from = covid_19_swab_result, values_from = n) %>% 
-  select(Agency, Negative, `No Show`, `Waiting for Results`, Positive, Total) %>%
+  pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
+  select(Agency, Negative, Positive, Total) %>%
   mutate_all(as.character) %>% 
-  mutate_all(replace_na, 0) %>% 
+  mutate_all(replace_na, 0) %>%  
   bind_rows(result_total) 
 
 kable(appt_by_agency, "latex", booktabs = T,
       caption = paste("COVID-19 Appointment Outcome by Agency for",
-                       project_start_date, "to", current_date)) %>% 
+                       project_start_date, "to", today())) %>% 
   kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
   row_spec(nrow(appt_by_agency) - 1, hline_after = T)
 ```
 
 ```{r fig.align="center", fig.width=12, fig.height=6}
 appt_over_time <- filtered_records %>%
-  count(test_date_and_time, covid_19_swab_result) %>% 
-  filter(covid_19_swab_result != 'Waiting for Results')
+  filter(as_date(test_date_and_time) != '1969-12-31') %>% 
+  mutate(test_date_and_time = as_date(test_date_and_time)) %>% 
+  count(test_date_and_time, covid_19_swab_result) 
 
 ggplot(appt_over_time, aes(x = test_date_and_time, y = n, 
                            color = covid_19_swab_result))+
   geom_line()+
   geom_point()+
   scale_y_continuous(breaks = seq(0, max(appt_over_time$n), by = 20))+
-  scale_x_date(date_breaks = "2 day", date_labels = "%b-%d")+
+  scale_x_date(date_breaks = "1 week", date_labels = "%b-%d")+
   labs(x = "Appointment Date", y = "# Persons", 
-       title = "Appointment Outcome Over Time",
-       colour = "Outcome")+
+       title = "Swab Result Over Time",
+       colour = "Covid-19 Swab Result")+
   theme(plot.title = element_text(hjust = 0.5))
 ```
