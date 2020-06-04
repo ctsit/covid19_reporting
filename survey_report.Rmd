@@ -81,7 +81,7 @@ yes_no_fields <- records %>%
   
 ```
 
-This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result at baseline. This report is based on a de-duplicated dataset that counts each person only once even if they submitted multiple consents and questionnaires. This report is based on the our first encounter with each such person wherein they received swab result. The swab result shown here is that _first_ swab result.
+This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result at baseline. This report is based on a de-duplicated dataset that counts each person only once even if they submitted multiple consents and questionnaires. This report is based our first encounter with each such person wherein they received a swab result.
 
 Table 1 provides the statistics for checkbox fields, Table 2 provides the statistics for radio and yes/no fields and Table 3 provides the statistics for numeric variables. The total number of unique subjects is `r total_subjects`.
 
