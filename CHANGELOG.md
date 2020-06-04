@@ -3,6 +3,16 @@ All notable changes to the REDCap First Responder covid19 reporting project will
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.2.0] - 2020-06-04
+### Added
+- Add set_send_survey_invites_field.R with improved de-duplication (Laurence James-Woodley)
+
+### Changed
+- remove swab results from survey_report (Laurence James-Woodley)
+- Use send_survey_invites in survey_report (Philip Chase)
+- use env variable for uri (Laurence James-Woodley)
+
+
 ## [0.1.0] - 2020-05-08
 ### Added
 - appointment_report.Rmd - A person-centric report about the study participants who have received or are still waiting for a result.

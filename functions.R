@@ -1,5 +1,5 @@
 get_records <- function(...){
-  records <- redcap_read_oneshot(redcap_uri = 'https://redcap.ctsi.ufl.edu/redcap/api/',
+  records <- redcap_read_oneshot(redcap_uri = Sys.getenv("URI"),
                                  token = Sys.getenv("TOKEN"),
                                  guess_max = 3000, ...)$data 
   
@@ -46,11 +46,10 @@ get_checkboxes <- function(df){
     select(checkbox_cols) %>% 
     pivot_longer(checkbox_cols, names_to = "checkbox_name",
                  values_to = "checkbox_value") %>%    
-    left_join(checkboxes) %>% 
+    inner_join(checkboxes) %>% 
     mutate_all(trimws) %>%  
     select(-checkbox_name) %>% 
-    filter(checkbox_value == 1) %>%    
-    count(field_label, label)
+    count(field_label, label, checkbox_value)
     
   return(df_with_checkbox_labels)
 }
@@ -59,7 +58,7 @@ get_checkboxes <- function(df){
 get_radio_cols <- function(df){
   radio <- data_dictionary %>%
   filter(field_type == "radio" & (form_name == 'coronavirus_covid19_questionnaire' |
-                                    field_name %in% c('covid_19_swab_result', 'site_short_name', 'test_type'))) %>%
+                                    field_name %in% c('site_short_name', 'test_type'))) %>%
     select(field_name, select_choices_or_calculations, field_label) %>%
     separate_rows(select_choices_or_calculations, sep = "\\|") %>%
     separate(select_choices_or_calculations, into = c("numeric_value", "label"),
@@ -74,8 +73,8 @@ get_radio_cols <- function(df){
     colnames()
   
   df_with_radio_labels <- df %>%
-    select(radio_cols) %>%  
-    mutate_all(as.character) %>%  
+    select(radio_cols) %>% 
+    mutate_all(as.character) %>% 
     pivot_longer(radio_cols, names_to = "field_name",
                  values_to = "numeric_value") %>%  
     inner_join(radio) %>%   
