@@ -30,11 +30,7 @@ write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"),
           row.names = F, na = "")
   
 records <- records %>% 
-  filter(!is.na(covid_19_swab_result) & 
-           redcap_event_name == 'baseline_arm_1' & 
-           !is.na(ce_email) & send_survey_invites == 1)
-
-
+  filter(send_survey_invites == 1) 
 
 total_subjects <- nrow(records)
 
@@ -66,8 +62,8 @@ radio_fields_all <- radio_fields %>%
   arrange(field_label) %>% 
   mutate(perc = round((yes/total_subjects * 100), 1)) %>%  
   # total should be nrow(records) for every field_label
-  # group_by(field_label) %>%
-  # mutate(total = sum(Yes))
+  # group_by(field_label) %>%  
+  # mutate(total = sum(yes))
   mutate("N (%)" = paste0(yes, " (", perc,")")) %>% 
   select(field_label, "Variable" = label, "N (%)")
 

@@ -58,7 +58,7 @@ get_checkboxes <- function(df){
 get_radio_cols <- function(df){
   radio <- data_dictionary %>%
   filter(field_type == "radio" & (form_name == 'coronavirus_covid19_questionnaire' |
-                                    field_name %in% c('covid_19_swab_result', 'site_short_name', 'test_type'))) %>%
+                                    field_name %in% c('site_short_name', 'test_type'))) %>%
     select(field_name, select_choices_or_calculations, field_label) %>%
     separate_rows(select_choices_or_calculations, sep = "\\|") %>%
     separate(select_choices_or_calculations, into = c("numeric_value", "label"),
