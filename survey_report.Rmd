@@ -30,11 +30,7 @@ write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"),
           row.names = F, na = "")
   
 records <- records %>% 
-  filter(!is.na(covid_19_swab_result) & 
-           redcap_event_name == 'baseline_arm_1' & 
-           !is.na(ce_email))
-
-
+  filter(send_survey_invites == 1) 
 
 total_subjects <- nrow(records)
 
@@ -66,8 +62,8 @@ radio_fields_all <- radio_fields %>%
   arrange(field_label) %>% 
   mutate(perc = round((yes/total_subjects * 100), 1)) %>%  
   # total should be nrow(records) for every field_label
-  # group_by(field_label) %>%
-  # mutate(total = sum(Yes))
+  # group_by(field_label) %>%  
+  # mutate(total = sum(yes))
   mutate("N (%)" = paste0(yes, " (", perc,")")) %>% 
   select(field_label, "Variable" = label, "N (%)")
 
@@ -85,7 +81,9 @@ yes_no_fields <- records %>%
   
 ```
 
-This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result at baseline. Table 1 provides the statistics for checkbox fields, Table 2 provides the statistics for radio and yes/no fields and Table 3 provides the statistics for numeric variables. The total number of unique subjects is `r total_subjects`.
+This report provides the summary statistics for the First Responder Covid 19 questionnaires for research subjects with a swab result at baseline. This report is based on a de-duplicated dataset that counts each person only once even if they submitted multiple consents and questionnaires. This report is based our first encounter with each such person wherein they received a swab result.
+
+Table 1 provides the statistics for checkbox fields, Table 2 provides the statistics for radio and yes/no fields and Table 3 provides the statistics for numeric variables. The total number of unique subjects is `r total_subjects`.
 
 ```{r}
 kable(checkbox_fields %>% select(-field_label), booktabs = T, longtable = T,
