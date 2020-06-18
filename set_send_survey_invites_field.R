@@ -10,7 +10,6 @@ records <- get_records()
 filtered_records <- records %>% 
   mutate(test_date_and_time = as_date(test_date_and_time),
          days_since_appt = today() - test_date_and_time) %>%
-  # TODO: filter(!is.na(survey_invite)) on future iterations
   filter(redcap_event_name == "baseline_arm_1") %>%
   filter(!is.na(covid_19_swab_result)) %>%
   filter(!is.na(ce_email)) %>%
