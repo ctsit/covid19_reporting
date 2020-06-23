@@ -114,4 +114,28 @@ df_with_yes_no_labels <- df %>%
  return(df_with_yes_no_labels)
 
 }
+
+send_upload_email <- function(email_body, email_subject = "",
+                              email_covid_report = T) {
+  # email credentials
+  email_server <- list(smtpServer = Sys.getenv("SMTP_SERVER"))
+  email_from <- Sys.getenv("EMAIL_FROM")
+  if (email_covid_report) {
+    email_to <- unlist(strsplit(Sys.getenv("EMAIL_TO"), " "))
+  } else {
+    email_to <- unlist(strsplit(Sys.getenv("SET_SEND_SURVEY_EMAIL_TO"), " "))
+  }
+  if (email_subject == "") {
+    email_subject <- paste(Sys.getenv("EMAIL_SUBJECT"),
+                           with_tz(now(),
+                                   tzone = Sys.getenv("TIME_ZONE")))
+  }
   
+  sendmail(
+    from = email_from,
+    to = email_to,
+    subject = email_subject,
+    msg = email_body,
+    control = email_server
+  )
+}
