@@ -2,8 +2,11 @@ library(tidyverse)
 library(dotenv)
 library(REDCapR)
 library(lubridate)
+library(sendmailR)
+
 source("functions.R")
 
+script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
 
 records <- get_records()  
 
@@ -15,7 +18,11 @@ filtered_records <- records %>%
   filter(!is.na(ce_email)) %>%
   mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>% 
   select(record_id, redcap_event_name, ce_firstname, ce_lastname, patient_dob, 
-         ce_email, zipcode, q_agency)
+         ce_email, zipcode, q_agency, send_survey_invites)
+
+# save these to remove later on when doing upload
+current_send_survey_invites <- filtered_records %>% 
+  filter(!is.na(send_survey_invites))
 
 # get all unique emails within filtered_records
 unique_email <- filtered_records %>% 
@@ -80,16 +87,37 @@ set_send_survey_invites <- send_survey_field_set_by_unique_email %>%
   ungroup()
 
 # verify that send_survey_invites for multiple subjects with same name was correctly set
-verify_same_names <- set_send_survey_invites %>% 
-  add_count(ce_firstname, ce_lastname) %>% 
-  filter(n > 1)  
+# verify_same_names <- set_send_survey_invites %>% 
+#   add_count(ce_firstname, ce_lastname) %>% 
+#   filter(n > 1)  
 
-write_csv(verify_same_names, "output/verify_same_names.csv", na = "")
+# write_csv(verify_same_names, "output/verify_same_names.csv", na = "")
+
+# remove records where send_survey_invite was already set
+set_send_survey_invites_upload <- set_send_survey_invites %>% 
+  anti_join(current_send_survey_invites, by = c("record_id")) %>% 
+  select(record_id, redcap_event_name, send_survey_invites)
 
 # must be true
 if (nrow(set_send_survey_invites) == nrow(filtered_records)) {
-  write_csv(set_send_survey_invites %>% 
-              select(record_id, redcap_event_name, send_survey_invites),
-            paste("output/survey_field_set_", today(), ".csv"), na = "")
+  write_data <- redcap_write(
+    set_send_survey_invites_upload,
+    redcap_uri = Sys.getenv("URI"),
+    token = Sys.getenv("TOKEN")
+  )
+  
+  if (write_data$success) {
+    message <- paste("send_survey_invites was set for",
+                     write_data$records_affected_count, "records in",
+                     Sys.getenv("PROJECT"))
+  } else {
+    message <- paste0("Upload to ", Sys.getenv("PROJECT"),
+                      "was not successful. The reason given was:\n",
+                       write_data$outcome_message)
+  }
+  email_subject <- paste("Set send_survey_invites log |", 
+                         Sys.getenv("INSTANCE"), "|", script_run_time)
+  
+  send_upload_email(message, email_subject, email_covid_report = F)
   
 }
