@@ -31,48 +31,21 @@ This is a person-centric report about the study participants in the First Respon
 ```{r}
 # read appointment data betewwen 2020-04-08 and current_date 
 records <- get_records(raw_or_label = "label") 
-  
-filtered_records <- records %>%
-  select(record_id, redcap_event_name, ce_firstname, ce_lastname, ce_email, 
-         send_survey_invites, test_date_and_time, covid_19_swab_result, q_agency) %>% 
-  filter(send_survey_invites == 'Yes' | covid_19_swab_result == 'Positive') %>%  
-  mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>% 
-  arrange(desc(covid_19_swab_result)) %>% 
-  # priority is given to positive results when there are multiple tests per subject
-  distinct(ce_firstname, ce_lastname, ce_email, .keep_all = T) %>% 
-  select("Agency" = q_agency, covid_19_swab_result, test_date_and_time)
+```
 
-result_total <- filtered_records %>%
-  count(covid_19_swab_result) %>% 
-  mutate(perc = round(n/sum(n),3)*100,
-         n = paste0(n, " (", perc,"%)")) %>% 
-  select(-perc) %>% 
-  pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
-  add_column("Agency" = "Total",  "Total" = as.character(nrow(filtered_records)))
-  
-appt_by_agency <- filtered_records %>% 
-  count(Agency, covid_19_swab_result) %>%  
-  group_by(Agency) %>% 
-  mutate(perc = round(n/sum(n),2)*100,
-         Total = sum(n),
-         n = paste0(n, " (", perc,"%)")) %>% 
-  select(-perc) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
-  select(Agency, Negative, Positive, Total) %>%
-  mutate_all(as.character) %>% 
-  mutate_all(replace_na, 0) %>%  
-  bind_rows(result_total) 
+```{r}
+q_agency_counts <- filter_records_by_agency("q_agency") %>% 
+  create_summary_table()
 
-kable(appt_by_agency, "latex", booktabs = T,
+kable(q_agency_counts, "latex", booktabs = T,
       caption = paste("COVID-19 Appointment Outcome by Agency for",
                        project_start_date, "to", today())) %>% 
   kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
-  row_spec(nrow(appt_by_agency) - 1, hline_after = T)
+  row_spec(nrow(q_agency_counts) - 1, hline_after = T)
 ```
 
-```{r fig.align="center", fig.width=12, fig.height=6}
-appt_over_time <- filtered_records %>%
+```{r fig.align="center", fig.height=6, fig.width=12}
+appt_over_time <- filter_records_by_agency("q_agency") %>%
   filter(as_date(test_date_and_time) != '1969-12-31') %>% 
   mutate(test_date_and_time = as_date(test_date_and_time)) %>% 
   count(test_date_and_time, covid_19_swab_result) 
@@ -88,3 +61,16 @@ ggplot(appt_over_time, aes(x = test_date_and_time, y = n,
        colour = "Covid-19 Swab Result")+
   theme(plot.title = element_text(hjust = 0.5))
 ```
+
+```{r}
+q_ufhealth_department_counts <- filter_records_by_agency("q_ufhealth_department",
+                                                         !is.na(Agency)) %>% 
+  create_summary_table()
+
+kable(q_ufhealth_department_counts, "latex", booktabs = T,
+      caption = paste("COVID-19 Appointment Outcome by UF Health Department for",
+                       project_start_date, "to", today())) %>% 
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
+  row_spec(nrow(q_ufhealth_department_counts) - 1, hline_after = T)
+```
+
