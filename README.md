@@ -24,8 +24,8 @@ This script is configured entirely via the environment. An example `.env` file i
 
 ## The Scripts
 
-- `appointment_report.Rmd` - A person-centric report about the study participants who have received or are still waiting for a result.
-- `render_report.R` - A script runner that runs and sends `appointment_report.Rmd` via email.
+- `results_summary_by_agency.Rmd` - A person-centric report about the study participants who have received or are still waiting for a result. It summarizes test results by agency.
+- `render_report.R` - A script runner that runs and sends the FR COVID reports via email.
 - `set_send_survey_invites_field.R` - A script that sets send_survey_invites_field at baseline for study participants.
 - `survey_report.Rmd` - A basic data summary and data export script.
 
@@ -33,7 +33,7 @@ This script is configured entirely via the environment. An example `.env` file i
 ## Report renderer
 The primary script used to run the RMarkdown reports is [`render_report.R`](render_report.R). `render_report.R` mails out report results to a list of recipients defined in the .env file. At this time, `render_report.R` runs these scripts:
 
-    appointment_report.Rmd
+    results_summary_by_agency.Rmd
 
 
 ## Release and Deployment
