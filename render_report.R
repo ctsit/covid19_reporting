@@ -18,5 +18,4 @@ body <- paste0("The attached file includes the Appointment Outcomes for",
 email_body <- list(body, attachment_object)
 
 # send the email with the attached output file
-send_upload_email(email_body, email_subject  = "", email_covid_report = T)
-
+send_upload_email(email_body, email_subject  = "")
