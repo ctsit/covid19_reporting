@@ -115,16 +115,11 @@ df_with_yes_no_labels <- df %>%
 
 }
 
-send_upload_email <- function(email_body, email_subject = "",
-                              email_covid_report = T) {
+send_upload_email <- function(email_body, email_subject = "") {
   # email credentials
   email_server <- list(smtpServer = Sys.getenv("SMTP_SERVER"))
   email_from <- Sys.getenv("EMAIL_FROM")
-  if (email_covid_report) {
-    email_to <- unlist(strsplit(Sys.getenv("EMAIL_TO"), " "))
-  } else {
-    email_to <- unlist(strsplit(Sys.getenv("SET_SEND_SURVEY_EMAIL_TO"), " "))
-  }
+  email_to <- unlist(strsplit(Sys.getenv("EMAIL_TO"), " "))
   if (email_subject == "") {
     email_subject <- paste(Sys.getenv("EMAIL_SUBJECT"),
                            with_tz(now(),
