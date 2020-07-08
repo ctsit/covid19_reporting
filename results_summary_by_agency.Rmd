@@ -1,5 +1,5 @@
 ---
-title: "First Responder COVID-19 Report"
+title: "First Responder COVID-19 Test Results by Agency"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
@@ -26,7 +26,7 @@ project_start_date <- ymd("2020-04-08")
 script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
 ```
 
-This is a person-centric report about the study participants in the First Responder COVID-19 Project. This report only includes study participants who have received a swab result.
+This is a person-centric report about the study participants in the First Responder COVID-19 Project. It summarizes the test results by agency. This report only includes study participants who have received a swab result.
 
 ```{r}
 # read appointment data betewwen 2020-04-08 and current_date 
@@ -38,7 +38,7 @@ q_agency_counts <- filter_records_by_agency("q_agency") %>%
   create_summary_table()
 
 kable(q_agency_counts, "latex", booktabs = T,
-      caption = paste("COVID-19 Appointment Outcome by Agency for",
+      caption = paste("COVID-19 Test Results by Agency for",
                        project_start_date, "to", today())) %>% 
   kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
   row_spec(nrow(q_agency_counts) - 1, hline_after = T)
@@ -68,7 +68,7 @@ q_ufhealth_department_counts <- filter_records_by_agency("q_ufhealth_department"
   create_summary_table()
 
 kable(q_ufhealth_department_counts, "latex", booktabs = T,
-      caption = paste("COVID-19 Appointment Outcome by UF Health Department for",
+      caption = paste("COVID-19 Test Results by UF Health Department for",
                        project_start_date, "to", today())) %>% 
   kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
   row_spec(nrow(q_ufhealth_department_counts) - 1, hline_after = T)
