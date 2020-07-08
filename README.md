@@ -26,19 +26,19 @@ This script is configured entirely via the environment. An example `.env` file i
 
 - `appointment_report.Rmd` - A person-centric report about the study participants who have received or are still waiting for a result.
 - `render_report.R` - A script runner that runs and sends `appointment_report.Rmd` via email.
-- `identify_duplicated_subjects.R` - An ETL script that will disable subsequent email addresses of people who created multiple records.
+- `set_send_survey_invites_field.R` - A script that sets send_survey_invites_field at baseline for study participants.
 - `survey_report.Rmd` - A basic data summary and data export script.
 
 
 ## Running the RMarkdown script
-The primary script used to run the RMarkdown reports is [`render_report.R`](render_report.R). `render_report.R` mails out report results to a list of recipients defined in the .env file. At this tim, `render_report.R` runs these scripts:
+The primary script used to run the RMarkdown reports is [`render_report.R`](render_report.R). `render_report.R` mails out report results to a list of recipients defined in the .env file. At this time, `render_report.R` runs these scripts:
 
     appointment_report.Rmd
 
 To build the image and run the report using docker within the project directory do:
 
-`docker build -t <image_name> .`
+`docker build -t covid_reporting .`
 
 and run the report using docker within the project directory like this:
 
-`docker run --rm --env-file my.env <image_name> Rscript <script_name.R>`
+`docker run --rm --env-file <path_to_dir_full_of_env_files>/prod.env covid_reporting Rscript render_report.R`

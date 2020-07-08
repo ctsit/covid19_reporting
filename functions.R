@@ -115,6 +115,26 @@ df_with_yes_no_labels <- df %>%
 
 }
 
+send_upload_email <- function(email_body, email_subject = "") {
+  # email credentials
+  email_server <- list(smtpServer = Sys.getenv("SMTP_SERVER"))
+  email_from <- Sys.getenv("EMAIL_FROM")
+  email_to <- unlist(strsplit(Sys.getenv("EMAIL_TO"), " "))
+  if (email_subject == "") {
+    email_subject <- paste(Sys.getenv("EMAIL_SUBJECT"),
+                           with_tz(now(),
+                                   tzone = Sys.getenv("TIME_ZONE")))
+  }
+  
+  sendmail(
+    from = email_from,
+    to = email_to,
+    subject = email_subject,
+    msg = email_body,
+    control = email_server
+  )
+}
+
 filter_records_by_agency <- function(field_name, ...) {
   filtered_records <- records %>%
     select(record_id, redcap_event_name, ce_firstname, ce_lastname, ce_email, 
