@@ -34,6 +34,7 @@ This script is configured entirely via the environment. An example `.env` file i
 The primary script used to run the RMarkdown reports is [`render_report.R`](render_report.R). `render_report.R` mails out report results to a list of recipients defined in the .env file. At this time, `render_report.R` runs these scripts:
 
     results_summary_by_agency.Rmd
+    survey_report.Rmd
 
 
 ## Release and Deployment
