@@ -100,7 +100,7 @@ set_send_survey_invites_upload <- set_send_survey_invites %>%
 
 # must be true
 if (nrow(set_send_survey_invites) == nrow(filtered_records)) {
-  write_data <- redcap_write(
+  write_data <- redcap_write_oneshot(
     set_send_survey_invites_upload,
     redcap_uri = Sys.getenv("URI"),
     token = Sys.getenv("TOKEN")
