@@ -1,6 +1,6 @@
-# Covid-19 Reporting Tools
+# First Responder Covid-19 Reporting Tools
 
-This repository provides reporting, data cleaning, and export tools in support of the COVID-19 Testing projects at the University of Florida. This repo provides a Dockerfile to run some of the RMarkdown scripts via a Docker container.
+This repository provides reporting, data cleaning, and export tools in support of the First Responder COVID-19 Testing projects at the University of Florida. This repo provides a Dockerfile to run some of the RMarkdown scripts via a Docker container.
 
 
 ## Prerequisites
