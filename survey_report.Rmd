@@ -41,8 +41,8 @@ data_dictionary <- redcap_metadata_read(redcap_uri = Sys.getenv("URI"),
 
 records <- get_records() 
 
-write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"),
-          row.names = F, na = "")
+# write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"),
+#           row.names = F, na = "")
   
 records <- records %>% 
   filter(send_survey_invites == 1) 
