@@ -118,7 +118,6 @@ if (nrow(set_send_survey_invites) == nrow(filtered_records)) {
   email_subject <- paste("Set FR send_survey_invites log |", 
                          Sys.getenv("INSTANCE"), "|", script_run_time)
   
-  send_upload_email(message, email_subject, email_covid_report = F)
+  send_upload_email(message, email_subject)
   
 }
-
