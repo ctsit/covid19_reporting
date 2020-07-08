@@ -6,12 +6,27 @@ library(lubridate)
 script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
 
 # create the pdf report
-file_name <- paste0('results_summary_by_agency_', as_date(script_run_time), '.pdf')
+results_summary_by_agency_file_name <- paste0('results_summary_by_agency_', 
+                                              as_date(script_run_time), '.pdf')
 
-render("results_summary_by_agency.Rmd", output_file = file_name )
+survey_report_file_name <- paste0('survey_report_', as_date(script_run_time), '.pdf')
+
+output_dir <- paste0("fr_covid_reports_", as_date(script_run_time))
+dir.create(output_dir, recursive = T)
+
+render("results_summary_by_agency.Rmd",
+       output_file = results_summary_by_agency_file_name,
+       output_dir = output_dir)
+
+render("survey_report.Rmd", 
+       output_file = survey_report_file_name,
+       output_dir = output_dir)
+
+zipfile_name = paste0(output_dir, ".zip")
+zip(zipfile_name, output_dir)
 
 # attach the zip file and email it
-attachment_object <- mime_part(file_name, file_name)
+attachment_object <- mime_part(zipfile_name, zipfile_name)
 body <- paste0("The attached file includes the reports for",
                " the First Responder Covid-19 Project.", " File generated on ", script_run_time)
 
