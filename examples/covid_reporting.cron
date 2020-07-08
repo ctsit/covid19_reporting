@@ -1,8 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-
-# Set send_survey_invites at 0645 every Thursday
-45 6 * * 4 root  /usr/bin/docker  run --rm  --env-file /ctsit/covid_reporting/prod.env --env-file /ctsit/covid_reporting/to_technical_team.env covid_reporting Rscript set_send_survey_invites_field.R
-
-# Run the pdf report at 0700 every Thursday.
-0 7 * * 4 root  /usr/bin/docker  run --rm  --env-file /ctsit/covid_reporting/prod.env --env-file /ctsit/covid_reporting/to_study_team.env covid_reporting Rscript render_report.R

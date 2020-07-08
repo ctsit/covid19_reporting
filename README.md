@@ -30,15 +30,21 @@ This script is configured entirely via the environment. An example `.env` file i
 - `survey_report.Rmd` - A basic data summary and data export script.
 
 
-## Running the RMarkdown script
+## Report renderer
 The primary script used to run the RMarkdown reports is [`render_report.R`](render_report.R). `render_report.R` mails out report results to a list of recipients defined in the .env file. At this time, `render_report.R` runs these scripts:
 
     appointment_report.Rmd
 
-To build the image and run the report using docker within the project directory do:
 
-`docker build -t covid_reporting .`
+## Release and Deployment
 
-and run the report using docker within the project directory like this:
+This project uses the Git Flow workflow for releases. Every release should be versioned and have a ChangeLog entry that describes the new features and bug fixes. Every release should also be accompanied by an updated `VERSION` file to allow image builds to be tagged as they are built by the `build.sh`
 
-`docker run --rm --env-file <path_to_dir_full_of_env_files>/prod.env covid_reporting Rscript render_report.R`
+To deploy a new release on tools4, execute this series of commands or an equivalent from your home directory:
+
+```
+git clone https://github.com/ctsit/covid19_reporting.git
+cd covid19_reporting
+git pull
+sudo ./build.sh
+```
