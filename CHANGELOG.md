@@ -3,6 +3,19 @@ All notable changes to the REDCap First Responder covid19 reporting project will
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.3.0] - 2020-07-13
+### Changed
+- Update set_send_survey_invites_field.R (Laurence James-Woodley)
+- Remove previously set records and upload data via redcap_write (Laurence James-Woodley)
+- Add survey_report.Rmd to render_report.R (Laurence James-Woodley)
+- use send_upload_email function (Laurence James-Woodley)
+- Rename appointment_report to results_summary_by_agency (Philip Chase)
+- Adjust labeling in results summary by agency (Philip Chase)
+- Revise project name in README (Philip Chase)
+- Add build script, document in README, and adapt the cron script to the image name (Philip Chase)
+- add q_ufhealth_department counts (Laurence James-Woodley)
+
+
 ## [0.2.0] - 2020-06-04
 ### Added
 - Add set_send_survey_invites_field.R with improved de-duplication (Laurence James-Woodley)
