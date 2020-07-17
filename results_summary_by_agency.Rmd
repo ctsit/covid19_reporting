@@ -31,21 +31,31 @@ This is a person-centric report about the study participants in the First Respon
 ```{r}
 # read appointment data betewwen 2020-04-08 and current_date 
 records <- get_records(raw_or_label = "label") 
+covid_cols <- c("Agency", "Negative", "Positive", "Total")
+igg_cols <- c("Agency", "Negative", "Positive","Indeterminate", "Total")
 ```
 
 ```{r}
-q_agency_counts <- filter_records_by_agency("q_agency") %>% 
-  create_summary_table()
+covid_q_agency_counts <- filter_records_by_agency(
+    covid_19_swab_result,
+    q_agency,
+    send_survey_invites == "Yes" |
+      covid_19_swab_result == 'Positive'
+  ) %>%
+  create_summary_table(covid_19_swab_result, covid_cols)
 
-kable(q_agency_counts, "latex", booktabs = T,
+kable(covid_q_agency_counts, "latex", booktabs = T,
       caption = paste("COVID-19 Test Results by Agency for",
                        project_start_date, "to", today())) %>% 
   kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
-  row_spec(nrow(q_agency_counts) - 1, hline_after = T)
+  row_spec(nrow(covid_q_agency_counts) - 1, hline_after = T)
 ```
 
 ```{r fig.align="center", fig.height=6, fig.width=12}
-appt_over_time <- filter_records_by_agency("q_agency") %>%
+appt_over_time <- filter_records_by_agency(covid_19_swab_result,
+    q_agency,
+    send_survey_invites == "Yes" |
+      covid_19_swab_result == 'Positive') %>%
   filter(as_date(test_date_and_time) != '1969-12-31') %>% 
   mutate(test_date_and_time = as_date(test_date_and_time)) %>% 
   count(test_date_and_time, covid_19_swab_result) 
@@ -63,14 +73,54 @@ ggplot(appt_over_time, aes(x = test_date_and_time, y = n,
 ```
 
 ```{r}
-q_ufhealth_department_counts <- filter_records_by_agency("q_ufhealth_department",
-                                                         !is.na(Agency)) %>% 
-  create_summary_table()
+covid_q_ufhealth_department_counts <- filter_records_by_agency(
+    covid_19_swab_result,
+    q_ufhealth_department,
+    send_survey_invites == "Yes" |
+      covid_19_swab_result == 'Positive'
+  ) %>%
+  filter(!is.na(Agency)) %>%
+  create_summary_table(covid_19_swab_result, covid_cols)
 
-kable(q_ufhealth_department_counts, "latex", booktabs = T,
+kable(covid_q_ufhealth_department_counts, "latex", booktabs = T,
       caption = paste("COVID-19 Test Results by UF Health Department for",
                        project_start_date, "to", today())) %>% 
   kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
-  row_spec(nrow(q_ufhealth_department_counts) - 1, hline_after = T)
+  row_spec(nrow(covid_q_ufhealth_department_counts) - 1, hline_after = T)
+```
+
+```{r}
+igg_q_agency_counts <- filter_records_by_agency(
+  igg_antibodies,
+  q_agency,
+  (send_survey_invites == 'Yes' &
+     !is.na(igg_antibodies)) |
+    igg_antibodies == 'Positive'
+  ) %>%
+  create_summary_table(igg_antibodies, igg_cols)
+
+kable(igg_q_agency_counts, "latex", booktabs = T,
+      caption = paste("IgG Test Results by Agency for",
+                       project_start_date, "to", today())) %>% 
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
+  row_spec(nrow(igg_q_agency_counts) - 1, hline_after = T)
+```
+
+```{r}
+igg_q_ufhealth_department_counts <- filter_records_by_agency(
+    igg_antibodies,
+    q_ufhealth_department,
+    (send_survey_invites == 'Yes' &
+     !is.na(igg_antibodies)) |
+    igg_antibodies == 'Positive'
+  ) %>%
+  filter(!is.na(Agency)) %>%
+  create_summary_table(igg_antibodies, igg_cols)
+
+kable(igg_q_ufhealth_department_counts, "latex", booktabs = T,
+      caption = paste("IgG Test Results by UF Health Department for",
+                       project_start_date, "to", today())) %>% 
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>% 
+  row_spec(nrow(igg_q_ufhealth_department_counts) - 1, hline_after = T)
 ```
 

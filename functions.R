@@ -135,41 +135,40 @@ send_upload_email <- function(email_body, email_subject = "") {
   )
 }
 
-filter_records_by_agency <- function(field_name, ...) {
+filter_records_by_agency <- function(field_name_1, field_name_2, ...) {
   filtered_records <- records %>%
     select(record_id, redcap_event_name, ce_firstname, ce_lastname, ce_email, 
-           send_survey_invites, test_date_and_time, covid_19_swab_result, q_agency,
+           send_survey_invites, test_date_and_time, {{field_name_1}}, q_agency,
            q_ufhealth_department) %>% 
-    filter(send_survey_invites == 'Yes' | covid_19_swab_result == 'Positive') %>%  
-    mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>% 
-    arrange(desc(covid_19_swab_result)) %>% 
+    filter(...) %>%  
+    mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>%
+    arrange(desc({{field_name_1}})) %>%
     # priority is given to positive results when there are multiple tests per subject
-    distinct(ce_firstname, ce_lastname, ce_email, .keep_all = T) %>% 
-    select("Agency" = field_name, covid_19_swab_result, test_date_and_time) %>%   
-    filter(...)
+    distinct(ce_firstname, ce_lastname, ce_email, .keep_all = T) %>%
+    select("Agency" = {{field_name_2}}, {{field_name_1}}, test_date_and_time) 
   
   return(filtered_records)
 }
 
-create_summary_table <- function(filtered_records){
+create_summary_table <- function(filtered_records, field_name, cols_to_select){
   result_total <- filtered_records %>%
-    count(covid_19_swab_result) %>% 
+    count({{field_name}}) %>% 
     mutate(perc = round(n/sum(n),3)*100,
            n = paste0(n, " (", perc,"%)")) %>% 
     select(-perc) %>% 
-    pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
+    pivot_wider(names_from = {{field_name}}, values_from = n) %>%  
     add_column("Agency" = "Total",  "Total" = as.character(nrow(filtered_records)))
   
   appt_by_agency <- filtered_records %>% 
-    count(Agency, covid_19_swab_result) %>%  
+    count(Agency, {{field_name}}) %>%  
     group_by(Agency) %>% 
     mutate(perc = round(n/sum(n),2)*100,
            Total = sum(n),
            n = paste0(n, " (", perc,"%)")) %>% 
     select(-perc) %>% 
     ungroup() %>% 
-    pivot_wider(names_from = covid_19_swab_result, values_from = n) %>%  
-    select(Agency, Negative, Positive, Total) %>%
+    pivot_wider(names_from = {{field_name}}, values_from = n) %>%  
+    select(all_of(cols_to_select)) %>%
     mutate_all(as.character) %>% 
     mutate_all(replace_na, 0) %>%  
     bind_rows(result_total) 
