@@ -3,6 +3,8 @@ library(dotenv)
 library(sendmailR)
 library(lubridate)
 
+source("functions.R")
+
 script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
 
 # create the pdf report
