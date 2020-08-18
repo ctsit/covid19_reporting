@@ -5,6 +5,8 @@ output: pdf_document
 header-includes:
   - \usepackage{booktabs}
   - \usepackage{longtable}
+params:
+  dataout: "data/"
 ---
 
 ```{r setup, include=FALSE}
@@ -17,7 +19,6 @@ library(tidyverse)
 library(dotenv)
 library(REDCapR)
 library(lubridate)
-library(janitor)
 library(kableExtra)
 library(skimr)
 source("functions.R")
@@ -29,8 +30,8 @@ data_dictionary <- redcap_metadata_read(redcap_uri = Sys.getenv("URI"),
 
 records <- get_records() 
 
-# write.csv(records, paste0("data/fr_redcap_data_export_", today(), ".csv"),
-#           row.names = F, na = "")
+write.csv(records, paste0(params$dataout, "fr_redcap_data_export_", today(), ".csv"),
+          row.names = F, na = "")
   
 records <- records %>% 
   filter(send_survey_invites == 1) 

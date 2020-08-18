@@ -3,6 +3,8 @@ library(dotenv)
 library(sendmailR)
 library(lubridate)
 
+source("functions.R")
+
 script_run_time <- with_tz(now(), tzone = Sys.getenv("TIME_ZONE"))
 
 # create the pdf report
@@ -20,7 +22,11 @@ render("results_summary_by_agency.Rmd",
 
 render("survey_report.Rmd", 
        output_file = survey_report_file_name,
-       output_dir = output_dir)
+       output_dir = output_dir,
+       params = list(
+         dataout = paste0(output_dir, "/")
+       )
+)
 
 zipfile_name = paste0(output_dir, ".zip")
 zip(zipfile_name, output_dir)
