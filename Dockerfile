@@ -6,9 +6,10 @@ RUN apt update -y && apt install -y \
  libcurl4-openssl-dev
 
 #install necessary libraries
-RUN R -e "install.packages(c('sendmailR', 'dotenv', 'REDCapR', 'RCurl', 'checkmate', 'lubridate', 'kableExtra', 'skimr', 'tidyverse'))"
+RUN R -e 'install.packages(c("sendmailR", "dotenv", "REDCapR", "RCurl", "checkmate", "lubridate", "kableExtra", "skimr", "tidyverse"))'
 
-Run R -e "devtools::source_url('https://raw.githubusercontent.com/ctsit/r_utils/master/install_latex_packages.R')"
+ADD latex_packages.csv /tmp/
+RUN R -e 'tinytex::tlmgr_install(read.csv("/tmp/latex_packages.csv")$package)'
 
 ADD *.R /report/
 ADD *.Rmd /report/
