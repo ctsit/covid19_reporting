@@ -1,6 +1,20 @@
 # Change Log
-All notable changes to the REDCap First Responder covid19 reporting project will be documented in this file.
+
+All notable changes to the **REDCap First Responder COVID-19 Reporting**
+project will be documented in this file.
+
 This project adheres to [Semantic Versioning](http://semver.org/).
+
+
+## [0.4.0] - 2020-08-18
+### Added
+- Include data file in emailed Zip file (Taeber Rapczak)
+- Source functions file (Laurence James-Woodley)
+- Add IgG count (Laurence James-Woodley)
+
+### Changed
+- Remove need to source from CTSIT utils (Taeber Rapczak)
+- Update docker install (#24) (Laurence James-Woodley)
 
 
 ## [0.3.0] - 2020-07-13
