@@ -14,7 +14,7 @@ filtered_records <- records %>%
   mutate(test_date_and_time = as_date(test_date_and_time),
          days_since_appt = today() - test_date_and_time) %>%
   filter(redcap_event_name == "baseline_arm_1") %>%
-  filter(!is.na(covid_19_swab_result)) %>%
+  filter(!is.na(covid_19_swab_result) | !is.na(saliva_result)) %>%
   filter(!is.na(ce_email)) %>%
   mutate_at(vars("ce_firstname", "ce_lastname", "ce_email"), tolower) %>% 
   select(record_id, redcap_event_name, ce_firstname, ce_lastname, patient_dob, 
